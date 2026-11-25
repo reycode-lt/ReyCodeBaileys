@@ -44,7 +44,7 @@
     "async-mutex": "^0.5.0",
     "cache-manager": "^5.7.6",
     "chalk": "^4.1.2",
-    "libsignal": "github:tenka-san/libsignal-node",
+    "libsignal": "github:tenka-san/libsignal-node#105ad38dc8d7668b5d5e3688e710915bef5cdc7f",
     "long": "^5.0.0",
     "lru-cache": "^11.1.0",
     "music-metadata": "^11.12.3",
