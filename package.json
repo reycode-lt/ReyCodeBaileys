@@ -20,7 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/reycode-lt/ReyCodeBaileys.git"
   },
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "author": "ReyCodeDGTL",
   "main": "lib/index.js",
   "files": [
