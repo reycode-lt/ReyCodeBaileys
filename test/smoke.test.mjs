@@ -1,5 +1,7 @@
+
 // Smoke test: the package imports and its main public exports are reachable.
 // Uses only Node's built-in test runner. Does NOT open a WhatsApp connection.
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import makeWASocket, * as baileys from '../lib/index.js';
@@ -23,12 +25,26 @@ test('core public exports are present', () => {
         'buildZipArchive',
         'USyncQuery'
     ]) {
-        assert.notEqual(baileys[name], undefined, `missing export: ${name}`);
+        assert.notEqual(
+            baileys[name],
+            undefined,
+            `missing export: ${name}`
+        );
     }
 });
 
-test('PouCode browser identity', () => {
-    assert.equal(baileys.Browsers.poucode('Chrome')[0], 'PouCode');
+test('ReyCode browser identity', () => {
+    assert.deepEqual(
+        baileys.Browsers.reycode('Chrome'),
+        ['ReyCodeDGTL', 'Chrome', '1.0.0']
+    );
+});
+
+test('legacy PouCode browser alias remains backward compatible', () => {
+    assert.deepEqual(
+        baileys.Browsers.poucode('Chrome'),
+        ['ReyCodeDGTL', 'Chrome', '1.0.0']
+    );
 });
 
 test('DisconnectReason values are stable', () => {
@@ -37,7 +53,14 @@ test('DisconnectReason values are stable', () => {
 });
 
 test('JID helpers', () => {
-    assert.equal(baileys.jidDecode('628123456789@s.whatsapp.net').user, '628123456789');
+    assert.equal(
+        baileys.jidDecode('6281260512743@s.whatsapp.net').user,
+        '6281260512743'
+    );
+
     assert.equal(baileys.isInteropUser('abc@interop'), true);
-    assert.equal(baileys.isInteropUser('628123456789@s.whatsapp.net'), false);
+    assert.equal(
+        baileys.isInteropUser('6281260512743@s.whatsapp.net'),
+        false
+    );
 });
