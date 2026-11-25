@@ -1,19 +1,18 @@
-# <div align='center'>PouCode</div>
 
-<p align="center">
+# ReyCodeBaileys
 
-  <img src="https://files.catbox.moe/i497x5.jpg" width="180" alt="Pou"/>
+<div align="center">
 
-</p>
+**WhatsApp Multi-Device Library**
 
-<div align='center'>
+Maintained by **ReyCodeDGTL**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub](https://img.shields.io/badge/source-GitHub-black.svg)](https://github.com/pou-code/Baileys)
+[![GitHub](https://img.shields.io/badge/source-GitHub-black.svg)](https://github.com/reycode-lt/ReyCodeBaileys)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
-A WebSockets library for interacting with WhatsApp Web, maintained under the **PouCode** brand.
-This project is a fork built on top of [Baileys](https://github.com/WhiskeySockets/Baileys) by WhiskeySockets.
+ReyCodeBaileys is a WebSockets library for interacting with WhatsApp Web.
+This project is derived from NxBaileys and builds upon Baileys by WhiskeySockets.
 
 </div>
 
@@ -21,55 +20,35 @@ This project is a fork built on top of [Baileys](https://github.com/WhiskeySocke
 
 ## Installation
 
-Requires **Node.js 20+** (this package is ESM-only; see [Import](#import)).
+Requires **Node.js 20+**. This package is ESM-only.
 
-From the npm registry (once published):
+From npm (once published):
+
 ```bash
-npm install @poucode/baileys
+npm install reycode-baileys
 ```
 
 Directly from GitHub:
+
 ```bash
-npm install github:pou-code/Baileys
-```
-
-Or add it to your `package.json` manually:
-```json
-"dependencies": {
-  "@poucode/baileys": "latest"
-}
-```
-
-Already have a bot built on the original `@whiskeysockets/baileys` and don't want to change every
-`require`/`import` in your codebase? Alias the dependency name instead, so the original package
-name points to this fork:
-```json
-"dependencies": {
-  "@whiskeysockets/baileys": "npm:poucode/baileys"
-}
-```
-With this alias, keep using `require('@whiskeysockets/baileys')` in your code as-is — npm will
-resolve it to this fork under the hood.
-
-You can also pin to a specific branch or commit:
-```bash
-npm install github:pou-code/Baileys#main
+npm install github:reycode-lt/ReyCodeBaileys
 ```
 
 ## Import
 
-ESM (works on every supported Node.js version):
 ```javascript
-import makeWASocket, { Browsers, DisconnectReason } from '@poucode/baileys';
+import makeWASocket, {
+  Browsers,
+  DisconnectReason
+} from 'reycode-baileys';
 ```
 
-CommonJS: the package is ESM-only, so `require()` only works on Node.js 22.12+ or 20.19+
-(Node's `require(esm)` support). On older versions use `import` instead.
+CommonJS:
+
 ```javascript
 const {
-  default: makeWASocket,
-  // other exports
-} = require('@poucode/baileys');
+  default: makeWASocket
+} = require('reycode-baileys');
 ```
 
 ---
@@ -77,18 +56,17 @@ const {
 # Connecting To WhatsApp
 
 ## With QR Code
+
 ```javascript
 const {
   default: makeWASocket,
   Browsers
-} = require('@poucode/baileys');
+} = require('reycode-baileys');
 
 const client = makeWASocket({
   browser: Browsers.poucode('Chrome')
 });
 
-// `printQRInTerminal` is deprecated: the QR string now arrives via connection.update.
-// Render it with your own QR library (e.g. qrcode-terminal) if you want it in the terminal.
 client.ev.on('connection.update', ({ connection, qr }) => {
   if (qr) console.log('Scan this QR string:', qr);
   if (connection === 'open') console.log('Connected');
@@ -96,27 +74,26 @@ client.ev.on('connection.update', ({ connection, qr }) => {
 ```
 
 ## Connect With Pairing Code
+
 ```javascript
 const {
   default: makeWASocket,
   fetchLatestWaWebVersion,
   Browsers
-} = require('@poucode/baileys');
+} = require('reycode-baileys');
 
 async function start() {
-  // fetchLatestWaWebVersion() resolves to { version, isLatest, error? }
   const { version } = await fetchLatestWaWebVersion();
 
   const client = makeWASocket({
     browser: Browsers.poucode('Chrome'),
     printQRInTerminal: false,
     version,
-    aiLabel: false // set true to show an AI label on messages sent by the bot
-    // other options
+    aiLabel: false
   });
 
   const number = "628XXXXXXXXXX";
-  const code = await client.requestPairingCode(number.trim()); // or (number, "YYYYYYYY") for a custom pairing code
+  const code = await client.requestPairingCode(number.trim());
 
   console.log("Your pairing code: " + code);
 }
@@ -125,23 +102,24 @@ start();
 ```
 
 # Storing Data
+
 ```javascript
 const {
   default: makeWASocket,
   makeInMemoryStore
-} = require('@poucode/baileys');
+} = require('reycode-baileys');
+
 const pino = require('pino');
 
 const store = makeInMemoryStore({
   logger: pino().child({ level: 'silent', stream: 'store' })
 });
-const client = makeWASocket({
-  // options
-});
+
+const client = makeWASocket({});
 store.bind(client.ev);
 
 client.ev.on('contacts.upsert', () => {
-  console.log('New contact: ' + Object.values(store.contacts()));
+  console.log('New contact:', Object.values(store.contacts));
 });
 ```
 
@@ -149,44 +127,24 @@ client.ev.on('contacts.upsert', () => {
 
 ## Send / relay a message with `noSelfSync`
 
-`noSelfSync` is a `relayMessage` option (private/1-on-1 chats only) that controls whether the
-message is also synced to your **other own linked devices** (other phones/WhatsApp Web sessions
-logged into the same account). It does not affect delivery to the recipient.
+`noSelfSync` is a `relayMessage` option for private chats. It controls whether a message is also synced to your other linked devices.
 
-- **`noSelfSync: true`** — the message is sent to the recipient as normal, but is **not** synced
-  to your other own devices. Useful when you don't want a message to show up on your other
-  linked sessions (e.g. silent/automated sends from a bot account).
-- **`noSelfSync: false`** (default) — normal behavior. The message is sent to the recipient and
-  also synced to your other own devices, so it appears everywhere you're logged in, just like
-  sending from the official WhatsApp app.
+- `noSelfSync: true` — prevents syncing to your other devices.
+- `noSelfSync: false` — normal syncing behavior.
 
 ```javascript
-// Sent to the recipient, but NOT synced to your other devices
 await client.relayMessage(m.chat, {
-  conversation: "Hello from PouCode"
-}, {
-  noSelfSync: true
-});
-
-// Sent to the recipient AND synced to your other devices (default behavior)
-await client.relayMessage(m.chat, {
-  conversation: "Hello from PouCode"
-}, {
-  noSelfSync: false
-});
-
-// Also works through sendMessage
-await client.sendMessage(m.chat, {
-  text: "Hello from PouCode"
+  conversation: "Hello from ReyCodeBaileys"
 }, {
   noSelfSync: true
 });
 ```
 
 ## Send an orderMessage
+
 ```javascript
 const fs = require('fs');
-const thumbnail = fs.readFileSync('./pouthumb.jpg');
+const thumbnail = fs.readFileSync('./thumbnail.jpg');
 
 await client.sendMessage(m.chat, {
   thumbnail,
@@ -198,6 +156,7 @@ await client.sendMessage(m.chat, {
 ```
 
 ## Send a pollResultSnapshotMessage
+
 ```javascript
 await client.sendMessage(m.chat, {
   pollResultMessage: {
@@ -205,33 +164,23 @@ await client.sendMessage(m.chat, {
     options: [
       { optionName: "Option 1" },
       { optionName: "Option 2" }
-    ],
-    newsletter: {
-      newsletterName: "0X8 - Society",
-      newsletterJid: "120363424944937940@newsletter"
-    }
+    ]
   }
 });
 ```
 
 ## Send a productMessage
+
 ```javascript
 await client.relayMessage(m.chat, {
   productMessage: {
-    title: "Product.pdf",
+    title: "Product",
     description: "Product description",
-    thumbnail: { url: "./pouthumb.jpg" },
     productId: "EXAMPLE_TOKEN",
     retailerId: "EXAMPLE_RETAILER_ID",
     url: "https://example.com",
     body: "Body text",
     footer: "Footer",
-    buttons: [
-      {
-        name: "cta_url",
-        buttonParamsJson: "{\"display_text\":\"Visit\",\"url\":\"https://example.com\"}"
-      }
-    ],
     priceAmount1000: 72502,
     currencyCode: "IDR"
   }
@@ -239,29 +188,25 @@ await client.relayMessage(m.chat, {
 ```
 
 ## Send an interactiveMessage
+
 ```javascript
 await client.sendMessage(m.chat, {
-  image: { url: "./pouimg.jpg" },
   text: "body",
-  title: "title", // required when sending media
+  title: "title",
   footer: "footer",
   interactiveButtons: [
     {
       name: "single_select",
       buttonParamsJson: JSON.stringify({
-        title: "\0"
+        title: "Select"
       })
     }
-  ],
-  messageParams: JSON.stringify({
-    bottom_sheet: {
-      /** other params **/
-    }
-  })
+  ]
 });
 ```
 
 ## Send a member label
+
 ```javascript
 await client.sendMessage(m.chat, {
   groupLabel: {
@@ -271,6 +216,7 @@ await client.sendMessage(m.chat, {
 ```
 
 ## Send a message to group members
+
 ```javascript
 await client.sendMessageMembers(m.chat, {
   extendedTextMessage: {
@@ -282,132 +228,72 @@ await client.sendMessageMembers(m.chat, {
 # Simple sendMessage Helpers
 
 ## Send text
+
 ```javascript
-await client.sendText(m.chat, "Hello!", {
-  contextInfo: {
-    mentionedJid: [m.chat]
-  }
-}, {
-  key: {
-    remoteJid: "status@broadcast",
-    participant: m.sender,
-    fromMe: true
-  },
-  message: {
-    conversation: "\0"
-  }
-});
+await client.sendText(m.chat, "Hello!");
 ```
 
 ## Send image
+
 ```javascript
-await client.sendImage(m.chat, { url: "./pouimg.jpg" }, "Caption", {
-  contextInfo: {
-    mentionedJid: [m.chat]
-  }
-}, {
-  key: {
-    remoteJid: "status@broadcast",
-    participant: m.sender,
-    fromMe: true
-  },
-  message: {
-    conversation: "\0"
-  }
-});
+await client.sendImage(m.chat, {
+  url: "./image.jpg"
+}, "Caption");
 ```
 
 ## Send video
+
 ```javascript
-await client.sendVideo(m.chat, { url: "./video.mp4" }, "Caption", {
-  contextInfo: {
-    mentionedJid: [m.chat]
-  }
-}, {
-  key: {
-    remoteJid: "status@broadcast",
-    participant: m.sender,
-    fromMe: true
-  },
-  message: {
-    conversation: "\0"
-  }
-});
+await client.sendVideo(m.chat, {
+  url: "./video.mp4"
+}, "Caption");
 ```
 
 ## Send audio
+
 ```javascript
-await client.sendAudio(m.chat, { url: "./pouaudio.mp3" }, {
-  contextInfo: {
-    mentionedJid: [m.chat]
-  }
-}, {
-  key: {
-    remoteJid: "status@broadcast",
-    participant: m.sender,
-    fromMe: true
-  },
-  message: {
-    conversation: "\0"
-  }
+await client.sendAudio(m.chat, {
+  url: "./audio.mp3"
 });
 ```
 
 ## Send location
+
 ```javascript
-await client.sendLocation(m.chat, "Caption", 90.0, 90.0, "https://example.com", "1234567890", {
-  contextInfo: {
-    mentionedJid: [m.chat]
-  }
-}, {
-  key: {
-    remoteJid: "status@broadcast",
-    participant: m.sender,
-    fromMe: true
-  },
-  message: {
-    conversation: "\0"
-  }
-});
+await client.sendLocation(
+  m.chat,
+  "Caption",
+  90.0,
+  90.0,
+  "https://example.com",
+  "1234567890"
+);
 ```
 
 ## Send poll
+
 ```javascript
-await client.sendPoll(m.chat, "Pick one", ["1", "2", "3"], true, {
-  contextInfo: {
-    mentionedJid: [m.chat]
-  }
-}, {
-  key: {
-    remoteJid: "status@broadcast",
-    participant: m.sender,
-    fromMe: true
-  },
-  message: {
-    conversation: "\0"
-  }
-});
+await client.sendPoll(
+  m.chat,
+  "Pick one",
+  ["Option 1", "Option 2", "Option 3"],
+  true
+);
 ```
 
 ## Send quiz
+
 ```javascript
-await client.sendQuiz(m.chat, "Quiz question", ["1", "2", "3"], "2", {
-  contextInfo: {
-    mentionedJid: [m.chat]
-  }
-}, {
-  key: {
-    remoteJid: "status@broadcast",
-    participant: m.sender,
-    fromMe: true
-  },
-  message: {
-    conversation: "\0"
-  }
-});
+await client.sendQuiz(
+  m.chat,
+  "Quiz question",
+  ["Option 1", "Option 2", "Option 3"],
+  "Option 2"
+);
 ```
 
 ## Send status mention
+
 ```javascript
 await client.statusMention(m.chat, {
   extendedTextMessage: {
@@ -418,37 +304,36 @@ await client.statusMention(m.chat, {
 
 ---
 
-# Merged Features (1.1.0)
+# ReyCodeBaileys Features
 
-WaBail 1.1.0 merges the extra layers of the `wbails` fork on top of the PouCode core:
+This project includes functionality inherited from its upstream codebase, including:
 
-- `sock.*` privacy, interop, GraphQL/Wamo and message-builder layers (see `lib/Socket/privacy.js`, `interop.js`, `graphql.js`, `message-builder.js`)
-- Extra USync protocols: business, picture, text status, sidelist, feature (`lib/WAUSync/`)
-- Sticker pack messages (`{ stickerPacks: {...} }`) and sticker metadata helpers (`lib/Utils/sticker.js`, needs `ffmpeg` in `PATH` for sticker conversion)
-- `useSqliteAuthState` (needs Node 22.5+ because it uses `node:sqlite`; loaded lazily, so Node 20 is unaffected unless you call it)
-- `makeInMemoryStore` persistence helpers: `writeToFile`, `readFromFile`, `writeToFileInterval`
-- 1:1 `cstoken` fallback: stores the NCT salt from app-state sync and attaches `cstoken` on private sends that have no `tctoken`. Disable per message with `{ cstoken: false }`.
+- Privacy and interoperability layers.
+- GraphQL and message-builder layers.
+- Extra USync protocols.
+- Sticker pack messages and sticker metadata helpers.
+- SQLite authentication state.
+- In-memory store persistence helpers.
+- Additional message handling features.
 
-The newsletter implementation is the one from WaBail (`lib/Socket/newsletter.js`) and is used unchanged.
+Feature availability and requirements depend on the underlying implementation.
 
 ## Private chat vs group notes
 
 - Reply to `msg.key.remoteJid` as-is. In private chats it can be `@lid`; the phone-number form is in `msg.key.remoteJidAlt`.
 - In groups the sender is `msg.key.participant` (alt in `msg.key.participantAlt`).
-- If a send to a user cannot resolve any of the recipient's devices, `relayMessage` now throws `421` instead of silently reporting success.
+- If a send to a user cannot resolve any of the recipient's devices, `relayMessage` may throw an error.
 
 # Credits
 
-PouCode is a fork of [Baileys](https://github.com/WhiskeySockets/Baileys), originally created by
-[Adhiraj Singh](https://github.com/adiwajshing) and maintained by the WhiskeySockets community.
-All credit for the underlying protocol implementation goes to the original authors and contributors.
-See [LICENSE](LICENSE) for the full license text and copyright notices.
+ReyCodeBaileys is derived from [NxBaileys](https://github.com/NazCodexID/NxBaileys), which builds upon [Baileys](https://github.com/WhiskeySockets/Baileys).
 
-# Contributing
+Original Baileys was created by [Adhiraj Singh](https://github.com/adiwajshing) and is maintained by the WhiskeySockets community.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on reporting issues and submitting pull requests.
+The upstream NxBaileys and PouCode contributors are also acknowledged. See [LICENSE](LICENSE) for copyright notices and license terms.
 
 # Disclaimer
 
-This is **not** an official WhatsApp product. Use of this library to send bulk or unsolicited messages
-may violate WhatsApp's Terms of Service and can result in your number being banned. Use responsibly.
+This is **not** an official WhatsApp product.
+
+Use this library responsibly and respect WhatsApp's Terms of Service. Avoid bulk or unsolicited messaging.
