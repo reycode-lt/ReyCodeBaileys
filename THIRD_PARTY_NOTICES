@@ -1,0 +1,24 @@
+THIRD-PARTY SOFTWARE NOTICES
+ReyCodeBaileys
+
+1. libsignal
+
+Package: libsignal
+Version: 2.0.1
+Source: https://github.com/tenka-san/libsignal-node
+Locked commit:
+105ad38dc8d7668b5d5e3688e710915bef5cdc7f
+
+License: GNU General Public License v3.0 (GPL-3.0)
+
+The libsignal dependency is distributed under the GNU
+General Public License version 3.0.
+
+Its original license and copyright notices must be
+preserved when redistributing the dependency.
+
+The full license text is available at:
+https://www.gnu.org/licenses/gpl-3.0.txt
+
+This notice is provided for third-party license
+attribution. It does not replace the original license.
