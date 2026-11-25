@@ -1232,7 +1232,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsignal@github:tenka-san/libsignal-node":
+"libsignal@github:tenka-san/libsignal-node#105ad38dc8d7668b5d5e3688e710915bef5cdc7f":
   version: 2.0.1
   resolution: "libsignal@https://github.com/tenka-san/libsignal-node.git#commit=105ad38dc8d7668b5d5e3688e710915bef5cdc7f"
   dependencies:
@@ -1737,7 +1737,7 @@ __metadata:
     cache-manager: "npm:^5.7.6"
     chalk: "npm:^4.1.2"
     jimp: "npm:^1.6.1"
-    libsignal: "github:tenka-san/libsignal-node"
+    libsignal: "github:tenka-san/libsignal-node#105ad38dc8d7668b5d5e3688e710915bef5cdc7f"
     link-preview-js: "npm:^3.0.0"
     long: "npm:^5.0.0"
     lru-cache: "npm:^11.1.0"
