@@ -125,7 +125,7 @@ information. It does not replace, modify, or override
 the original licenses of third-party components.
 
 
-6. Jimp
+7. Jimp
 
 Packages: jimp and @jimp/* packages
 Version: 1.7.0
@@ -154,7 +154,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-7. exif-parser
+6. exif-parser
 
 Package: exif-parser
 Version: 0.1.12
