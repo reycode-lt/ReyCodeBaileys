@@ -1,24 +1,48 @@
+
 THIRD-PARTY SOFTWARE NOTICES
 ReyCodeBaileys
 
-1. libsignal
+This project is derived from the following projects:
+
+1. Baileys
+
+Original project:
+https://github.com/WhiskeySockets/Baileys
+
+Copyright and license notices from the original project
+and its contributors are retained under their applicable
+license terms.
+
+2. NxBaileys
+
+Source project:
+https://github.com/NazCodexID/NxBaileys
+
+Copyright and license notices from NxBaileys and its
+contributors are retained under their applicable
+license terms.
+
+3. libsignal
 
 Package: libsignal
 Version: 2.0.1
-Source: https://github.com/tenka-san/libsignal-node
+
+Source:
+https://github.com/tenka-san/libsignal-node
+
 Locked commit:
 105ad38dc8d7668b5d5e3688e710915bef5cdc7f
 
-License: GNU General Public License v3.0 (GPL-3.0)
+License: GNU General Public License v3.0
 
-The libsignal dependency is distributed under the GNU
-General Public License version 3.0.
+The original license and copyright notices must be
+preserved when redistributing this dependency.
 
-Its original license and copyright notices must be
-preserved when redistributing the dependency.
-
-The full license text is available at:
+Full license:
 https://www.gnu.org/licenses/gpl-3.0.txt
 
-This notice is provided for third-party license
-attribution. It does not replace the original license.
+This notice is for attribution purposes only.
+It does not replace or modify the original licenses.
+
+Project maintainer:
+ReyCodeDGTL
