@@ -23,3 +23,18 @@ test('proto: neighbouring field 116 still works and is independent of 117', () =
     assert.notEqual(decoded.newsletterAdminProfileMessage, null);
     assert.equal(decoded.newsletterAdminProfileMessageV2, null);
 });
+
+test('proto: BigInt 64-bit timestamp round-trips exactly through fromObject', () => {
+    const timestamp = 9007199254740993n;
+    const message = proto.Message.fromObject({
+        imageMessage: {
+            mediaKeyTimestamp: timestamp
+        }
+    });
+
+    const bytes = proto.Message.encode(message).finish();
+    const decoded = proto.Message.decode(bytes);
+    const result = decoded.imageMessage.mediaKeyTimestamp.toString();
+
+    assert.equal(result, timestamp.toString());
+});

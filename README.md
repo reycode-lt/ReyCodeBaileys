@@ -31,6 +31,12 @@ From npm (once published):
 npm install reycode-baileys
 ```
 
+Using the legacy Baileys package name (npm alias):
+
+```bash
+npm install @whiskeysockets/baileys@npm:reycode-baileys
+```
+
 Directly from GitHub:
 
 ```bash
@@ -46,7 +52,7 @@ import makeWASocket, {
 } from 'reycode-baileys';
 ```
 
-> **ESM only:** Use `import` syntax. CommonJS `require()` is not supported directly.
+> **ESM:** Use `import` syntax (recommended). CommonJS `require()` may work on Node.js 20.19+ when the dependency graph has no top-level await.
 
 ---
 
