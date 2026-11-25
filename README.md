@@ -7,7 +7,7 @@
 
 Maintained by **ReyCodeDGTL**
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
 A WebSocket-based library for interacting with WhatsApp Web.
