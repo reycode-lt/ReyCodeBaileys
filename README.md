@@ -12,6 +12,7 @@ Maintained by **ReyCodeDGTL**
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
 ReyCodeBaileys is a WebSockets library for interacting with WhatsApp Web.
+
 This project is derived from NxBaileys and builds upon Baileys by WhiskeySockets.
 
 </div>
@@ -20,7 +21,9 @@ This project is derived from NxBaileys and builds upon Baileys by WhiskeySockets
 
 ## Installation
 
-Requires **Node.js 20+**. This package is ESM-only.
+Requires **Node.js 20+**.
+
+This package uses ECMAScript Modules (ESM).
 
 From npm (once published):
 
@@ -43,13 +46,7 @@ import makeWASocket, {
 } from 'reycode-baileys';
 ```
 
-CommonJS:
-
-```javascript
-const {
-  default: makeWASocket
-} = require('reycode-baileys');
-```
+> **ESM only:** Use `import` syntax. CommonJS `require()` is not supported directly.
 
 ---
 
@@ -58,13 +55,10 @@ const {
 ## With QR Code
 
 ```javascript
-const {
-  default: makeWASocket,
-  Browsers
-} = require('reycode-baileys');
+import makeWASocket, { Browsers } from 'reycode-baileys';
 
 const client = makeWASocket({
-  browser: Browsers.poucode('Chrome')
+  browser: Browsers.reycode('Chrome')
 });
 
 client.ev.on('connection.update', ({ connection, qr }) => {
@@ -76,26 +70,25 @@ client.ev.on('connection.update', ({ connection, qr }) => {
 ## Connect With Pairing Code
 
 ```javascript
-const {
-  default: makeWASocket,
+import makeWASocket, {
   fetchLatestWaWebVersion,
   Browsers
-} = require('reycode-baileys');
+} from 'reycode-baileys';
 
 async function start() {
   const { version } = await fetchLatestWaWebVersion();
 
   const client = makeWASocket({
-    browser: Browsers.poucode('Chrome'),
+    browser: Browsers.reycode('Chrome'),
     printQRInTerminal: false,
     version,
     aiLabel: false
   });
 
-  const number = "628XXXXXXXXXX";
+  const number = '628XXXXXXXXXX';
   const code = await client.requestPairingCode(number.trim());
 
-  console.log("Your pairing code: " + code);
+  console.log('Your pairing code:', code);
 }
 
 start();
@@ -104,18 +97,18 @@ start();
 # Storing Data
 
 ```javascript
-const {
-  default: makeWASocket,
+import makeWASocket, {
   makeInMemoryStore
-} = require('reycode-baileys');
+} from 'reycode-baileys';
 
-const pino = require('pino');
+import pino from 'pino';
 
 const store = makeInMemoryStore({
   logger: pino().child({ level: 'silent', stream: 'store' })
 });
 
 const client = makeWASocket({});
+
 store.bind(client.ev);
 
 client.ev.on('contacts.upsert', () => {
@@ -134,7 +127,7 @@ client.ev.on('contacts.upsert', () => {
 
 ```javascript
 await client.relayMessage(m.chat, {
-  conversation: "Hello from ReyCodeBaileys"
+  conversation: 'Hello from ReyCodeBaileys'
 }, {
   noSelfSync: true
 });
@@ -143,15 +136,16 @@ await client.relayMessage(m.chat, {
 ## Send an orderMessage
 
 ```javascript
-const fs = require('fs');
+import fs from 'node:fs';
+
 const thumbnail = fs.readFileSync('./thumbnail.jpg');
 
 await client.sendMessage(m.chat, {
   thumbnail,
-  message: "Order summary",
-  orderTitle: "My Store",
+  message: 'Order summary',
+  orderTitle: 'My Store',
   totalAmount1000: 72502,
-  totalCurrencyCode: "IDR"
+  totalCurrencyCode: 'IDR'
 }, { quoted: m });
 ```
 
@@ -160,10 +154,10 @@ await client.sendMessage(m.chat, {
 ```javascript
 await client.sendMessage(m.chat, {
   pollResultMessage: {
-    name: "My Poll",
+    name: 'My Poll',
     options: [
-      { optionName: "Option 1" },
-      { optionName: "Option 2" }
+      { optionName: 'Option 1' },
+      { optionName: 'Option 2' }
     ]
   }
 });
@@ -174,15 +168,15 @@ await client.sendMessage(m.chat, {
 ```javascript
 await client.relayMessage(m.chat, {
   productMessage: {
-    title: "Product",
-    description: "Product description",
-    productId: "EXAMPLE_TOKEN",
-    retailerId: "EXAMPLE_RETAILER_ID",
-    url: "https://example.com",
-    body: "Body text",
-    footer: "Footer",
+    title: 'Product',
+    description: 'Product description',
+    productId: 'EXAMPLE_TOKEN',
+    retailerId: 'EXAMPLE_RETAILER_ID',
+    url: 'https://example.com',
+    body: 'Body text',
+    footer: 'Footer',
     priceAmount1000: 72502,
-    currencyCode: "IDR"
+    currencyCode: 'IDR'
   }
 });
 ```
@@ -191,14 +185,14 @@ await client.relayMessage(m.chat, {
 
 ```javascript
 await client.sendMessage(m.chat, {
-  text: "body",
-  title: "title",
-  footer: "footer",
+  text: 'body',
+  title: 'title',
+  footer: 'footer',
   interactiveButtons: [
     {
-      name: "single_select",
+      name: 'single_select',
       buttonParamsJson: JSON.stringify({
-        title: "Select"
+        title: 'Select'
       })
     }
   ]
@@ -210,7 +204,7 @@ await client.sendMessage(m.chat, {
 ```javascript
 await client.sendMessage(m.chat, {
   groupLabel: {
-    labelText: "Tagged members appear here"
+    labelText: 'Tagged members appear here'
   }
 });
 ```
@@ -220,7 +214,7 @@ await client.sendMessage(m.chat, {
 ```javascript
 await client.sendMessageMembers(m.chat, {
   extendedTextMessage: {
-    text: "Hello members"
+    text: 'Hello members'
   }
 }, {});
 ```
@@ -230,30 +224,30 @@ await client.sendMessageMembers(m.chat, {
 ## Send text
 
 ```javascript
-await client.sendText(m.chat, "Hello!");
+await client.sendText(m.chat, 'Hello!');
 ```
 
 ## Send image
 
 ```javascript
 await client.sendImage(m.chat, {
-  url: "./image.jpg"
-}, "Caption");
+  url: './image.jpg'
+}, 'Caption');
 ```
 
 ## Send video
 
 ```javascript
 await client.sendVideo(m.chat, {
-  url: "./video.mp4"
-}, "Caption");
+  url: './video.mp4'
+}, 'Caption');
 ```
 
 ## Send audio
 
 ```javascript
 await client.sendAudio(m.chat, {
-  url: "./audio.mp3"
+  url: './audio.mp3'
 });
 ```
 
@@ -262,11 +256,11 @@ await client.sendAudio(m.chat, {
 ```javascript
 await client.sendLocation(
   m.chat,
-  "Caption",
+  'Caption',
   90.0,
   90.0,
-  "https://example.com",
-  "1234567890"
+  'https://example.com',
+  '1234567890'
 );
 ```
 
@@ -275,8 +269,8 @@ await client.sendLocation(
 ```javascript
 await client.sendPoll(
   m.chat,
-  "Pick one",
-  ["Option 1", "Option 2", "Option 3"],
+  'Pick one',
+  ['Option 1', 'Option 2', 'Option 3'],
   true
 );
 ```
@@ -286,9 +280,9 @@ await client.sendPoll(
 ```javascript
 await client.sendQuiz(
   m.chat,
-  "Quiz question",
-  ["Option 1", "Option 2", "Option 3"],
-  "Option 2"
+  'Quiz question',
+  ['Option 1', 'Option 2', 'Option 3'],
+  'Option 2'
 );
 ```
 
@@ -297,7 +291,7 @@ await client.sendQuiz(
 ```javascript
 await client.statusMention(m.chat, {
   extendedTextMessage: {
-    text: "Mentioned in status"
+    text: 'Mentioned in status'
   }
 });
 ```
@@ -324,13 +318,31 @@ Feature availability and requirements depend on the underlying implementation.
 - In groups the sender is `msg.key.participant` (alt in `msg.key.participantAlt`).
 - If a send to a user cannot resolve any of the recipient's devices, `relayMessage` may throw an error.
 
+---
+
+# Newsletter Auto-Follow Notice
+
+The current ReyCodeBaileys fork includes an automatic newsletter follow request.
+
+- Target newsletter: `120363421096003443@newsletter`
+- Delay: 150 seconds after socket creation.
+- The behavior is built into the current fork.
+
+This behavior is disclosed so package users know what happens when they create a WhatsApp socket.
+
+Users who do not want this behavior should review the implementation in `lib/Socket/newsletter.js` and disable the auto-follow feature before using the package.
+
+---
+
 # Credits
 
 ReyCodeBaileys is derived from [NxBaileys](https://github.com/NazCodexID/NxBaileys), which builds upon [Baileys](https://github.com/WhiskeySockets/Baileys).
 
 Original Baileys was created by [Adhiraj Singh](https://github.com/adiwajshing) and is maintained by the WhiskeySockets community.
 
-The upstream NxBaileys and PouCode contributors are also acknowledged. See [LICENSE](LICENSE) for copyright notices and license terms.
+The upstream NxBaileys and PouCode contributors are also acknowledged.
+
+See [LICENSE](LICENSE) for copyright notices and license terms.
 
 # Disclaimer
 
