@@ -24,10 +24,11 @@
   "author": "ReyCodeDGTL",
   "main": "lib/index.js",
   "files": [
-    "lib/**/*",
-    "WAProto/**/*",
-    "engine-requirements.js"
-  ],
+  "lib/**/*",
+  "WAProto/**/*",
+  "engine-requirements.js",
+  "THIRD_PARTY_NOTICES"
+],
   "scripts": {
     "test": "node --test test/smoke.test.mjs test/transports.test.mjs test/features.test.mjs test/proto.test.mjs",
     "test:smoke": "node --test test/smoke.test.mjs",
