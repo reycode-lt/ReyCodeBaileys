@@ -1,15 +1,46 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+coverage/
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment and secrets
 .env
-.env.local
+.env.*
+!.env.example
+
+# WhatsApp authentication and sessions
 auth_info*/
 session*/
+sessions/
 *.session
+*.auth
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
+
+# OS files
 .DS_Store
-coverage/
+Thumbs.db
+
+# Editors
 .vscode/
 .idea/
-*.tgz
+
+# Package manager
 .yarn/
 .pnp.*
+*.tgz
+
+# Local configuration
+*.local
