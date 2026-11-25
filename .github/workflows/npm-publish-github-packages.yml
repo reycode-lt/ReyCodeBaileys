@@ -23,6 +23,11 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org/
 
+      - name: Setup npm CLI
+        run: |
+          npm install --global npm@11.15.0
+          npm --version
+
       - name: Enable Corepack
         run: |
           corepack enable
@@ -47,7 +52,7 @@ jobs:
       - name: Verify package contents
         run: npm pack --dry-run
 
-      - name: Publish package
-        run: npm publish --access public
+      - name: Stage package on npm
+        run: npm stage publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
