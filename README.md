@@ -3,14 +3,11 @@
 
 <div align="center">
 
-# ReyCodeBaileys
-
 **WhatsApp Multi-Device Library**
 
 Maintained by **ReyCodeDGTL**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub](https://img.shields.io/badge/source-GitHub-black.svg)](https://github.com/reycode-lt/ReyCodeBaileys)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
 A WebSocket-based library for interacting with WhatsApp Web.
@@ -26,15 +23,16 @@ Derived from NxBaileys and built upon the original Baileys project by WhiskeySoc
 - [Introduction](#introduction)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Import](#import)
+- [Module System](#module-system)
 - [Getting Started](#getting-started)
 - [Pairing Code](#pairing-code)
-- [Authentication and Storage](#authentication-and-storage)
+- [Authentication](#authentication)
+- [SQLite Authentication](#sqlite-authentication)
 - [Sending Messages](#sending-messages)
-- [Message Helpers](#message-helpers)
-- [Additional Features](#additional-features)
-- [Newsletter Auto-Follow Notice](#newsletter-auto-follow-notice)
-- [Compatibility](#compatibility)
+- [Additional Message Helpers](#additional-message-helpers)
+- [Browser Identity](#browser-identity)
+- [Security](#security)
+- [Newsletter Module](#newsletter-module)
 - [Credits](#credits)
 - [Disclaimer](#disclaimer)
 
@@ -42,22 +40,24 @@ Derived from NxBaileys and built upon the original Baileys project by WhiskeySoc
 
 ## Introduction
 
-ReyCodeBaileys is a WhatsApp Multi-Device library maintained by ReyCodeDGTL.
+ReyCodeBaileys is an independent WhatsApp Multi-Device library maintained by ReyCodeDGTL.
 
-The project is derived from NxBaileys, which builds upon the original Baileys library.
+The project is derived from NxBaileys, which builds upon the original Baileys project.
 
-The project aims to provide developers with tools for building applications that interact with WhatsApp Web.
+It provides developers with tools for building applications that interact with WhatsApp Web.
 
 ## Requirements
 
 - Node.js 20 or newer.
 - npm or Yarn.
 - Internet connection.
-- A WhatsApp account for connecting to WhatsApp.
+- A WhatsApp account.
+
+SQLite authentication requires Node.js 22.5 or newer because it uses the built-in `node:sqlite` module.
 
 ## Installation
 
-### From npm
+### npm
 
 Available after the package is published:
 
@@ -65,184 +65,214 @@ Available after the package is published:
 npm install reycode-baileys
 ```
 
-### Directly from GitHub
+### GitHub
 
 ```bash
 npm install github:reycode-lt/ReyCodeBaileys
 ```
 
-### Using Yarn
+### Yarn
 
 ```bash
 yarn add reycode-baileys
 ```
 
-## Import
+## Module System
 
-ReyCodeBaileys uses an ECMAScript Module (ESM) entry point.
+ReyCodeBaileys uses ECMAScript Modules (ESM).
 
 ### ESM
-
-Use `import` in `.js` files when your project uses ESM.
 
 ```javascript
 import makeWASocket, {
   Browsers,
-  DisconnectReason
+  DisconnectReason,
+  useMultiFileAuthState
 } from 'reycode-baileys';
 ```
 
 ### CommonJS
 
-For CommonJS projects, use dynamic `import()`.
-
-This allows a CommonJS application to load the ESM package without requiring a separate CommonJS build.
+CommonJS projects can load the package through dynamic `import()`:
 
 ```javascript
-async function loadBaileys() {
+async function start() {
   const {
     default: makeWASocket,
     Browsers,
-    DisconnectReason
+    useMultiFileAuthState
   } = await import('reycode-baileys');
 
-  return {
-    makeWASocket,
-    Browsers,
-    DisconnectReason
-  };
-}
-
-async function start() {
-  const {
-    makeWASocket,
-    Browsers,
-    DisconnectReason
-  } = await loadBaileys();
-
-  const socket = makeWASocket({
-    browser: Browsers.reycode('Chrome')
-  });
-
-  console.log('ReyCodeBaileys loaded successfully');
+  // Continue initialization here.
 }
 
 start().catch(console.error);
 ```
 
-**Important:** Direct synchronous `require('reycode-baileys')` is not guaranteed to work because the package uses ESM. Use dynamic `import()` in CommonJS applications.
+Direct synchronous `require()` is not guaranteed because the package uses ESM.
 
 ---
 
 ## Getting Started
 
-### Connect using QR Code
+The following example uses multi-file authentication.
 
 ```javascript
 import makeWASocket, {
-  Browsers
+  Browsers,
+  useMultiFileAuthState
 } from 'reycode-baileys';
 
 async function start() {
+  const { state, saveCreds } =
+    await useMultiFileAuthState('./session');
+
   const socket = makeWASocket({
+    auth: state,
     browser: Browsers.reycode('Chrome')
   });
 
+  socket.ev.on('creds.update', saveCreds);
+
   socket.ev.on('connection.update', ({ connection, qr }) => {
     if (qr) {
-      console.log('Scan this QR string:', qr);
+      console.log('QR Code:', qr);
     }
 
     if (connection === 'open') {
-      console.log('Connected to WhatsApp');
+      console.log('Connected to WhatsApp!');
+    }
+
+    if (connection === 'close') {
+      console.log('WhatsApp connection closed.');
     }
   });
-}
 
-start();
-```
-
-## Pairing Code
-
-You can also connect using a pairing code.
-
-```javascript
-import makeWASocket, {
-  fetchLatestWaWebVersion,
-  Browsers
-} from 'reycode-baileys';
-
-async function start() {
-  const { version } = await fetchLatestWaWebVersion();
-
-  const socket = makeWASocket({
-    browser: Browsers.reycode('Chrome'),
-    printQRInTerminal: false,
-    version,
-    aiLabel: false
-  });
-
-  const number = '628XXXXXXXXXX';
-
-  const code = await socket.requestPairingCode(
-    number.trim()
-  );
-
-  console.log('Your pairing code:', code);
-
-  socket.ev.on('connection.update', ({ connection }) => {
-    if (connection === 'open') {
-      console.log('Connected to WhatsApp');
-    }
-  });
+  return socket;
 }
 
 start().catch(console.error);
 ```
 
----
+## Pairing Code
 
-## Authentication and Storage
-
-ReyCodeBaileys provides storage helpers for maintaining application state.
-
-### In-memory store
+You can also request a pairing code.
 
 ```javascript
 import makeWASocket, {
-  makeInMemoryStore
+  Browsers,
+  fetchLatestWaWebVersion,
+  useMultiFileAuthState
 } from 'reycode-baileys';
 
-import pino from 'pino';
+async function start() {
+  const { state, saveCreds } =
+    await useMultiFileAuthState('./session');
 
-const store = makeInMemoryStore({
-  logger: pino().child({
-    level: 'silent',
-    stream: 'store'
-  })
-});
+  const { version } = await fetchLatestWaWebVersion();
 
-const socket = makeWASocket({});
+  const socket = makeWASocket({
+    auth: state,
+    browser: Browsers.reycode('Chrome'),
+    printQRInTerminal: false,
+    version
+  });
 
-store.bind(socket.ev);
+  socket.ev.on('creds.update', saveCreds);
 
-socket.ev.on('contacts.upsert', () => {
-  console.log(
-    'Contacts:',
-    Object.values(store.contacts)
-  );
-});
+  socket.ev.on('connection.update', ({ connection }) => {
+    if (connection === 'open') {
+      console.log('Connected to WhatsApp!');
+    }
+  });
+
+  if (!state.creds.registered) {
+    const number = '628XXXXXXXXXX';
+    const code = await socket.requestPairingCode(number);
+
+    console.log('Pairing Code:', code);
+  }
+
+  return socket;
+}
+
+start().catch(console.error);
 ```
 
-Keep authentication credentials private.
+Replace the example number with your own number in the required international format.
 
-Never share authentication files, session data, pairing codes, or account access with untrusted people.
+---
+
+## Authentication
+
+### Multi-file authentication
+
+```javascript
+import { useMultiFileAuthState } from 'reycode-baileys';
+
+const { state, saveCreds } =
+  await useMultiFileAuthState('./session');
+
+console.log('Authentication state loaded');
+```
+
+Remember to register the credential update listener:
+
+```javascript
+socket.ev.on('creds.update', saveCreds);
+```
+
+Keep the session directory private and do not upload it to a public repository.
+
+## SQLite Authentication
+
+SQLite authentication uses Node.js's built-in `node:sqlite` module.
+
+Requires Node.js 22.5 or newer.
+
+```javascript
+import makeWASocket, {
+  Browsers,
+  useSqliteAuthState
+} from 'reycode-baileys';
+
+async function start() {
+  const {
+    state,
+    saveCreds,
+    close
+  } = await useSqliteAuthState('./auth.db');
+
+  const socket = makeWASocket({
+    auth: state,
+    browser: Browsers.reycode('Chrome')
+  });
+
+  socket.ev.on('creds.update', saveCreds);
+
+  socket.ev.on('connection.update', ({ connection }) => {
+    if (connection === 'open') {
+      console.log('Connected!');
+    }
+
+    if (connection === 'close') {
+      console.log('Connection closed.');
+    }
+  });
+
+  return { socket, close };
+}
+
+start().catch(console.error);
+```
+
+Close the SQLite database when your application shuts down.
 
 ---
 
 ## Sending Messages
 
-### Send a text message
+### Send text
 
 ```javascript
 await socket.sendMessage(
@@ -253,251 +283,184 @@ await socket.sendMessage(
 );
 ```
 
-### Send or relay a message with noSelfSync
-
-`noSelfSync` is a `relayMessage` option for private chats.
-
-- `true`: prevents syncing to your other linked devices.
-- `false`: normal syncing behavior.
-
-```javascript
-await socket.relayMessage(m.chat, {
-  conversation: 'Hello from ReyCodeBaileys'
-}, {
-  noSelfSync: true
-});
-```
-
-### Send an orderMessage
-
-```javascript
-import fs from 'node:fs';
-
-const thumbnail = fs.readFileSync('./thumbnail.jpg');
-
-await socket.sendMessage(m.chat, {
-  thumbnail,
-  message: 'Order summary',
-  orderTitle: 'My Store',
-  totalAmount1000: 72502,
-  totalCurrencyCode: 'IDR'
-}, {
-  quoted: m
-});
-```
-
-### Send a pollResultSnapshotMessage
-
-```javascript
-await socket.sendMessage(m.chat, {
-  pollResultMessage: {
-    name: 'My Poll',
-    options: [
-      { optionName: 'Option 1' },
-      { optionName: 'Option 2' }
-    ]
-  }
-});
-```
-
-### Send a productMessage
-
-```javascript
-await socket.relayMessage(m.chat, {
-  productMessage: {
-    title: 'Product',
-    description: 'Product description',
-    productId: 'EXAMPLE_TOKEN',
-    retailerId: 'EXAMPLE_RETAILER_ID',
-    url: 'https://example.com',
-    body: 'Body text',
-    footer: 'Footer',
-    priceAmount1000: 72502,
-    currencyCode: 'IDR'
-  }
-});
-```
-
-### Send an interactiveMessage
-
-```javascript
-await socket.sendMessage(m.chat, {
-  text: 'body',
-  title: 'title',
-  footer: 'footer',
-  interactiveButtons: [
-    {
-      name: 'single_select',
-      buttonParamsJson: JSON.stringify({
-        title: 'Select'
-      })
-    }
-  ]
-});
-```
-
-### Send a group label
-
-```javascript
-await socket.sendMessage(m.chat, {
-  groupLabel: {
-    labelText: 'Tagged members appear here'
-  }
-});
-```
-
-### Send a message to group members
-
-```javascript
-await socket.sendMessageMembers(m.chat, {
-  extendedTextMessage: {
-    text: 'Hello members'
-  }
-}, {});
-```
-
----
-
-## Message Helpers
-
-ReyCodeBaileys includes additional message helper methods.
-
-### Send text
-
-```javascript
-await socket.sendText(m.chat, 'Hello!');
-```
-
 ### Send image
 
 ```javascript
-await socket.sendImage(
-  m.chat,
-  { url: './image.jpg' },
-  'Caption'
+await socket.sendMessage(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  {
+    image: { url: './image.jpg' },
+    caption: 'Hello!'
+  }
 );
 ```
 
 ### Send video
 
 ```javascript
-await socket.sendVideo(
-  m.chat,
-  { url: './video.mp4' },
-  'Caption'
+await socket.sendMessage(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  {
+    video: { url: './video.mp4' },
+    caption: 'Hello!'
+  }
 );
 ```
 
 ### Send audio
 
 ```javascript
-await socket.sendAudio(
-  m.chat,
-  { url: './audio.mp3' }
-);
-```
-
-### Send location
-
-```javascript
-await socket.sendLocation(
-  m.chat,
-  'Caption',
-  90.0,
-  90.0,
-  'https://example.com',
-  '1234567890'
+await socket.sendMessage(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  {
+    audio: { url: './audio.mp3' },
+    mimetype: 'audio/mpeg'
+  }
 );
 ```
 
 ### Send poll
 
 ```javascript
-await socket.sendPoll(
-  m.chat,
-  'Pick one',
-  ['Option 1', 'Option 2', 'Option 3'],
-  true
+await socket.sendMessage(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  {
+    poll: {
+      name: 'Choose an option',
+      values: ['Option 1', 'Option 2'],
+      selectableCount: 1
+    }
+  }
 );
 ```
 
-### Send quiz
+### Send a message with noSelfSync
+
+`noSelfSync` is an option for `relayMessage()` in private chats.
 
 ```javascript
-await socket.sendQuiz(
-  m.chat,
-  'Quiz question',
-  ['Option 1', 'Option 2', 'Option 3'],
-  'Option 2'
+await socket.relayMessage(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  {
+    conversation: 'Hello!'
+  },
+  {
+    noSelfSync: true
+  }
+);
+```
+
+---
+
+## Additional Message Helpers
+
+The message-builder layer exposes the following helpers through the main socket.
+
+### Send JSON message
+
+```javascript
+await socket.sendJsonMessage(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  {
+    conversation: 'Hello!'
+  }
+);
+```
+
+### Send action poll
+
+```javascript
+const poll = await socket.sendActionPoll(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  'Choose an action',
+  [
+    { vote: 'Option A', action: 'action_a' },
+    { vote: 'Option B', action: 'action_b' }
+  ]
+);
+```
+
+### Send album
+
+```javascript
+await socket.sendAlbumMessage(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  [
+    './image1.jpg',
+    './image2.jpg',
+    './video.mp4'
+  ]
 );
 ```
 
 ### Send status mention
 
 ```javascript
-await socket.statusMention(m.chat, {
-  extendedTextMessage: {
-    text: 'Mentioned in status'
+await socket.sendStatusMention(
+  '628XXXXXXXXXX@s.whatsapp.net',
+  {
+    extendedTextMessage: {
+      text: 'Hello from ReyCodeBaileys'
+    }
   }
-});
+);
 ```
 
----
+### Other available helpers
 
-## Additional Features
+- `resolvePollAction()`
+- `sendRichResponse()`
+- `sendButtonsMessage()`
+- `sendListMessage()`
+- `sendCarouselMessage()`
+- `forwardMessage()`
+- `sendVCard()`
+- `broadcastMessage()`
 
-The project includes functionality inherited from its upstream codebase, including:
-
-- Privacy and interoperability layers.
-- GraphQL and message-builder layers.
-- Extra USync protocols.
-- Sticker pack messages and sticker metadata helpers.
-- SQLite authentication state.
-- In-memory store persistence helpers.
-- Additional message handling features.
-- Newsletter-related functionality.
-
-Feature availability and requirements depend on the underlying implementation.
-
-## Private Chat and Group Notes
-
-- Reply to `msg.key.remoteJid` as-is.
-- In private chats, `remoteJid` can be an `@lid` address.
-- The phone-number form may be available in `msg.key.remoteJidAlt`.
-- In groups, the sender is identified through `msg.key.participant`.
-- The alternative participant address may be available in `msg.key.participantAlt`.
-- If a send operation cannot resolve any recipient devices, `relayMessage` may throw an error.
+Check the implementation and method signatures before using advanced helpers.
 
 ---
 
-## Newsletter Auto-Follow Notice
+## Browser Identity
 
-The current ReyCodeBaileys fork includes an automatic newsletter follow request.
+ReyCodeBaileys provides browser identity presets.
 
-**Current configuration:**
+```javascript
+import { Browsers } from 'reycode-baileys';
 
-- Target newsletter: `120363421096003443@newsletter`
-- Delay: 150 seconds after socket creation.
-- Behavior: automatic in the current implementation.
+const browser = Browsers.reycode('Chrome');
+```
 
-This behavior is disclosed so developers understand what happens when they create a WhatsApp socket using this package.
+Other presets include:
 
-Developers should review `lib/Socket/newsletter.js` and understand the behavior before deploying the library.
+- `Browsers.macOS()`
+- `Browsers.windows()`
+- `Browsers.android()`
+- `Browsers.iOS()`
+- `Browsers.ubuntu()`
+- `Browsers.baileys()`
 
 ---
 
-## Compatibility
+## Security
 
-| Component | Requirement |
-|---|---|
-| Node.js | 20 or newer |
-| Module system | ESM |
-| CommonJS applications | Dynamic `import()` |
-| Package manager | npm or Yarn |
+- Never publish authentication credentials.
+- Keep session directories and database files private.
+- Never share pairing codes with untrusted people.
+- Protect your server and application environment.
+- Avoid unsolicited or bulk messaging.
 
-The project is maintained as an ESM package.
+---
 
-CommonJS applications can load the package through dynamic imports.
+## Newsletter Module
+
+The repository contains a separate newsletter socket implementation in:
+
+`lib/Socket/newsletter.js`
+
+The main `makeWASocket()` constructor currently does not include that socket layer.
+
+The newsletter module should therefore not be assumed to run automatically when creating the main socket.
 
 ---
 
@@ -508,11 +471,11 @@ ReyCodeBaileys is derived from:
 - [NxBaileys](https://github.com/NazCodexID/NxBaileys)
 - [Baileys by WhiskeySockets](https://github.com/WhiskeySockets/Baileys)
 
-Original Baileys was created by [Adhiraj Singh](https://github.com/adiwajshing) and is maintained by the WhiskeySockets community.
+Original Baileys was created by Adhiraj Singh and is maintained by the WhiskeySockets community.
 
-We also acknowledge the contributions of NxBaileys and PouCode contributors.
+We acknowledge the upstream maintainers and contributors whose work makes this project possible.
 
-See [LICENSE](LICENSE) for copyright notices and license terms.
+See [LICENSE](LICENSE) for copyright and license information.
 
 ---
 
@@ -523,8 +486,6 @@ ReyCodeBaileys is an independent, unofficial project.
 It is not affiliated with, endorsed by, or officially connected to WhatsApp or Meta.
 
 Use this library responsibly and respect WhatsApp's Terms of Service.
-
-Avoid bulk or unsolicited messaging.
 
 The maintainers are not responsible for misuse of this software.
 
