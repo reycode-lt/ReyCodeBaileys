@@ -1,10 +1,12 @@
+
 {
-  "name": "@poucode/baileys",
+  "name": "reycode-baileys",
   "type": "module",
   "version": "2.0.1",
-  "description": "WaBail — PouCode fork of Baileys: WhatsApp Web WebSocket library with merged extra socket layers (privacy, interop, GraphQL, message builder), sticker packs and SQLite auth state",
+  "description": "WhatsApp Multi-Device Library by ReyCodeDGTL",
   "keywords": [
-    "poucode",
+    "reycode",
+    "reycode-baileys",
     "baileys",
     "whatsapp",
     "whatsapp-api",
@@ -14,13 +16,13 @@
     "wabail",
     "whatsapp-bot"
   ],
-  "homepage": "https://github.com/NazCodexID/NxBaileys",
+  "homepage": "https://github.com/reycode-lt/ReyCodeBaileys",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NazCodexID/NxBaileys.git"
+    "url": "git+https://github.com/reycode-lt/ReyCodeBaileys.git"
   },
   "license": "MIT",
-  "author": "PouCode",
+  "author": "ReyCodeDGTL",
   "main": "lib/index.js",
   "files": [
     "lib/**/*",
@@ -87,7 +89,7 @@
     "open": "^8.4.2",
     "pino-pretty": "^13.1.1",
     "prettier": "^3.5.3",
-    "protobufjs-cli": "^1.1.3",
+    "protobufjs-cli": "^1.1.1",
     "release-it": "^20.0.1",
     "ts-jest": "^29.4.0",
     "tsc-esm-fix": "^3.1.2",
@@ -150,10 +152,11 @@
     "node": ">=20.0.0"
   },
   "bugs": {
-    "url": "https://github.com/NazCodexID/NxBaileys/issues"
+    "url": "https://github.com/reycode-lt/ReyCodeBaileys/issues"
   },
   "contributors": [
-    "WhiskeySockets (original Baileys authors)"
+    "WhiskeySockets (original Baileys authors)",
+    "NxBaileys and PouCode contributors"
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
